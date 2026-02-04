@@ -1,7 +1,6 @@
 # SHUYUY 📸
 
-![License](https://img.shields.io/badge/license-GPLv3-blue.svg) ![Go Version]
-(https://img.shields.io/badge/Go-1.21+-00ADD8.svg) ![Vue Version](https://img.shields.io/badge/Vue-3.x-4FC08D.svg) ![Wails](https://img.shields.io/badge/Wails-v2-red.svg)
+![License](https://img.shields.io/badge/license-GPLv3-blue.svg)  ![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8.svg) ![Vue Version](https://img.shields.io/badge/Vue-3.x-4FC08D.svg) ![Wails](https://img.shields.io/badge/Wails-v2-red.svg)
 
 **Shuyuy** es una potente aplicación de escritorio diseñada para fotógrafos profesionales y entusiastas que necesitan optimizar su flujo de trabajo de post-procesamiento. Shuyuy permite la gestión masiva de imágenes, aplicando marcas de agua, redimensionamiento, compresión y filtros de manera eficiente y visual.
 
