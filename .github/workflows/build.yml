@@ -1,0 +1,103 @@
+name: Wails Build & Release
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  # Necessary for Wails to find the correct binary path
+  WAILS_VERSION: latest
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+        check-latest: true
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    # Linux specific dependencies
+    - name: Install Linux Dependencies
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
+
+    - name: Install Wails
+      run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+    - name: Build Application
+      shell: bash
+      run: |
+        cd shuyuy
+        export PATH=$PATH:$(go env GOPATH)/bin
+        wails build
+
+    # Rename binary for upload (Linux)
+    - name: Rename Binary (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: mv shuyuy/build/bin/shuyuy shuyuy/build/bin/shuyuy-linux-amd64
+
+    # Rename binary for upload (Windows)
+    - name: Rename Binary (Windows)
+      if: matrix.os == 'windows-latest'
+      run: mv shuyuy/build/bin/shuyuy.exe shuyuy/build/bin/shuyuy-windows-amd64.exe
+
+    # Rename binary for upload (macOS)
+    # Wails builds a .app bundle on macOS. We zip it.
+    - name: Package macOS App
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd shuyuy/build/bin
+        zip -r ../../shuyuy-macos-universal.zip shuyuy.app
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: shuyuy-${{ matrix.os }}
+        path: |
+          shuyuy/build/bin/shuyuy-linux-amd64
+          shuyuy/build/bin/shuyuy-windows-amd64.exe
+          shuyuy/shuyuy-macos-universal.zip
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/shuyuy-ubuntu-latest/shuyuy-linux-amd64
+            artifacts/shuyuy-windows-latest/shuyuy-windows-amd64.exe
+            artifacts/shuyuy-macos-latest/shuyuy-macos-universal.zip
+          generate_release_notes: true
