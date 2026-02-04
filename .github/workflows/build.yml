@@ -40,7 +40,7 @@ jobs:
         shell: bash
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
-          wails build
+          wails build -tags webkit2gtk_4_1
       # Rename binary for upload (Linux)
       - name: Rename Binary (Linux)
         if: matrix.os == 'ubuntu-latest'
